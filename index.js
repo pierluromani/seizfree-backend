@@ -17,7 +17,7 @@ const app = express()
 const server = http.createServer(app)
 
 // Server configuration
-app.use(cors(corsOption))
+app.use(cors(corsOptions))
 app.use(express.json());
 
 // Socket initialization

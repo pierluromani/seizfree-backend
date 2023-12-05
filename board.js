@@ -6,6 +6,7 @@ let buffer = []
 let bufferInterval
 
 let ourBoard
+let alertCounter = 0
 
 export function stopStreaming() {
    if (ourBoard?.isConnected())
@@ -49,13 +50,11 @@ export function impedanceTest() {
       if (ourBoard?.isConnected())
          if (ourBoard?.isStreaming()) {
             ourBoard.once("impedanceArray", impedanceArray => {
-
                resolve(impedanceArray)
             });
             ourBoard.impedanceTestChannels(['p', 'p', '-', '-', '-', '-', 'p', 'p'])
                .then(ob => {
                   socket.emitImpedanceTest("Test impedenza in corso...")
-
                })
             console.log("Testing impedence...")
          }
@@ -72,25 +71,34 @@ export function startSending() {
          buffer.push(sample.channelData)
       });
 
-      // Uso setInterval per inviare periodicamente un buffer di sample all'API pyhton
-      // bufferInterval = setInterval(() => {
-      //    sendBuffer(buffer)
-      // }, 4000)
+      // Uso setInterval per inviare un buffer di sample all'API pyhton
+      // ogni 4 secondi
+      bufferInterval = setInterval(() => {
+         sendBuffer(buffer)
+      }, 4000)
    }
 }
 
 const sendBuffer = buffer => {
    console.log("Invio buffer...")
-   fetch(`http://127.0.0.1:8080/buffer`, {
+   fetch(`http://127.0.0.1:8080/prediction`, {
       method: 'POST',
       headers: {
          'Content-Type': 'application/json'
       },
       body: JSON.stringify(buffer)
    })
-      .then(res => res.text())
+      .then(res => res.json())
       .then(res => {
-         socket.emitAlert('ALERT')
+         if (res.data.alert === 1) {
+            counter++
+            if (counter === 4)
+               socket.emitAlert('ALERT')
+         }
+         else {
+            counter = 0
+         }
       })
       .catch(err => console.log(err))
 }
+

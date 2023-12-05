@@ -14,7 +14,6 @@ export const register = (request, response) => {
          })
          user.save()
             .then((result) => {
-
                response.status(201).send({
                   message: "User Created Successfully",
                   result,

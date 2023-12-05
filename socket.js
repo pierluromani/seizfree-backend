@@ -14,16 +14,7 @@ export const initSocket = (server) => {
    })
 
    io.on('connection', (socket) => {
-      // board.connectBoard()
       console.log(`${socket.id} si è connesso`)
-      socket.on('disconnect', () => {
-         console.log(`${socket.id} si è disconnesso`)
-
-         socket.removeAllListeners(['sample'])
-         socket.removeAllListeners(['start'])
-         socket.removeAllListeners(['stop'])
-         board.stopStreaming()
-      })
 
       socket.on('connectHeadset', () => {
          board.connect()
@@ -31,6 +22,11 @@ export const initSocket = (server) => {
             board.stopStreaming()
          })
       })
+
+      socket.on('startStream', () => {
+         board.startSending()
+      })
+
       socket.on('startImpedanceTest', async () => {
          board.impedanceTest().then((impedanceArray) => {
             const newImpArr = impedanceArray.map(channel => channel.P)
@@ -50,10 +46,6 @@ export const initSocket = (server) => {
 
          })
       })
-      socket.on('startStream', () => {
-         board.startSending()
-      })
-
 
       emitSample = (sample) => {
          io.to(socket.id).emit('sample', { data: sample.channelData, timestamp: sample.timestamp })
@@ -71,6 +63,14 @@ export const initSocket = (server) => {
       emitMsg = (msg) => {
          io.to(socket.id).emit('msg', msg)
       }
+
+      socket.on('disconnect', () => {
+         console.log(`${socket.id} si è disconnesso`)
+         socket.removeAllListeners(['sample'])
+         socket.removeAllListeners(['start'])
+         socket.removeAllListeners(['stop'])
+         board.stopStreaming()
+      })
    })
 
    return io
