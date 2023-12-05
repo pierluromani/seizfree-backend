@@ -10,7 +10,7 @@ import auth from './auth.js'
 dotenv.config()
 
 // Server initialization
-const corsOption = {
+const corsOptions = {
    origin: 'http://localhost:3000'
 }
 const app = express()
@@ -32,8 +32,6 @@ mongoose.connect(process.env.DB_URL)
          console.log('Server listening on port 8000');
       });
    })
-
-
 
 // Routes configuration
 app.use('/', router)
